@@ -650,6 +650,7 @@ module MiniTest
     attr_accessor :start_time                         # :nodoc:
     attr_accessor :help                               # :nodoc:
     attr_accessor :verbose                            # :nodoc:
+    attr_accessor :verbose_skips                      # :nodoc:
     attr_writer   :options                            # :nodoc:
 
     ##
@@ -856,7 +857,7 @@ module MiniTest
       e = case e
           when MiniTest::Skip then
             @skips += 1
-            return "S" unless @verbose
+            return "S" unless @verbose or @verbose_skips
             "Skipped:\n#{meth}(#{klass}) [#{location e}]:\n#{e.message}\n"
           when MiniTest::Assertion then
             @failures += 1
@@ -874,6 +875,7 @@ module MiniTest
       @report = []
       @errors = @failures = @skips = 0
       @verbose = false
+      @verbose_skips = false
     end
 
     def process_args args = [] # :nodoc:
@@ -897,6 +899,10 @@ module MiniTest
           options[:verbose] = true
         end
 
+        opts.on '-s', '--skips', "Show skips. Show skipped tests like errors." do
+          options[:skips] = true
+        end
+
         opts.on '-n', '--name PATTERN', "Filter test names on pattern (e.g. /foo/)" do |a|
           options[:filter] = a
         end
@@ -914,6 +920,7 @@ module MiniTest
       srand options[:seed]
 
       self.verbose = options[:verbose]
+      self.verbose_skips = options[:skips]
       @help = orig_args.map { |s| s =~ /[\s|&<>$()]/ ? s.inspect : s }.join " "
 
       options
