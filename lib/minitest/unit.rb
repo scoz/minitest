@@ -640,6 +640,10 @@ module MiniTest
       msg ||= "Skipped, no message given"
       raise MiniTest::Skip, msg, bt
     end
+
+    def pending msg = nil, bt = caller
+      @passed = true
+    end
   end
 
   class Unit # :nodoc:
@@ -1048,7 +1052,7 @@ module MiniTest
         rescue *PASSTHROUGH_EXCEPTIONS
           raise
         rescue Exception => e
-          @passed = false
+          @passed ||= false
           result = runner.puke self.class, self.__name__, e
         ensure
           %w{ before_teardown teardown after_teardown }.each do |hook|
